@@ -1,6 +1,8 @@
 import http from 'http'
+import https from 'https'
 import express from 'express'
 import cors from 'cors'
+import fs from 'fs'
 import { Server, LobbyRoom } from 'colyseus'
 import { monitor } from '@colyseus/monitor'
 import { RoomType } from '../types/Rooms'
@@ -16,7 +18,11 @@ app.use(cors())
 app.use(express.json())
 // app.use(express.static('dist'))
 
-const server = http.createServer(app)
+const options = {
+  key: fs.existsSync(process.env.SSL_KEY_FILE) ? fs.readFileSync(process.env.SSL_KEY_FILE) : undefined,
+  cert: fs.existsSync(process.env.SSL_CRT_FILE) ? fs.readFileSync(process.env.SSL_CRT_FILE) : undefined,
+}
+const server = (process.env.HTTPS === 'true' ? https : http).createServer(options, app)
 const gameServer = new Server({
   server,
 })
